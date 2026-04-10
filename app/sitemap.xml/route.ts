@@ -1,18 +1,28 @@
+import { VALID_PROFESSIONS, KNOWN_MODIFIERS, KNOWN_PREFIXES } from "@/lib/professions"
 import { BASE_URL, LAST_UPDATED } from "@/lib/constants"
 
 export async function GET() {
   const lastmod = LAST_UPDATED
+  const sitemaps: string[] = []
+
+  // Profession sitemaps (urlset files)
+  for (const prof of VALID_PROFESSIONS) {
+    sitemaps.push(`${BASE_URL}/sitemap-files/${prof}.xml`)
+  }
+
+  // Modifier sitemaps (urlset files)
+  for (const prof of VALID_PROFESSIONS) {
+    for (const mod of KNOWN_MODIFIERS) {
+      sitemaps.push(`${BASE_URL}/sitemap-files/${prof}-${mod}.xml`)
+    }
+    for (const prefix of KNOWN_PREFIXES) {
+      sitemaps.push(`${BASE_URL}/sitemap-files/${prefix}-${prof}.xml`)
+    }
+  }
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <sitemap>
-    <loc>${BASE_URL}/sitemap-professions.xml</loc>
-    <lastmod>${lastmod}</lastmod>
-  </sitemap>
-  <sitemap>
-    <loc>${BASE_URL}/sitemap-modifiers.xml</loc>
-    <lastmod>${lastmod}</lastmod>
-  </sitemap>
+${sitemaps.map((url) => `  <sitemap>\n    <loc>${url}</loc>\n    <lastmod>${lastmod}</lastmod>\n  </sitemap>`).join("\n")}
 </sitemapindex>`
 
   return new Response(xml, {
